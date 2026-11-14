@@ -1,7 +1,7 @@
 # Sisyphus-consciousness
 My attempt to create language model with consciousness
 
-WARNING: Code in file sisyphus.py will save .pkl, .json, .py and .txt files on your computer (to the working directory) for it`s functions for each model: 
+WARNING: Code in file sisyphus.py will save those .pkl, .json, .py and .txt files on your computer (to the working directory) for it`s functions for each model: 
 m_{name}.json (vectors of the words), 
 w_{name}.json (words), 
 g_{name}.json (vectors with gradients for each word),
