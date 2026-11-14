@@ -715,7 +715,7 @@ class World(People):
                     self.countries_dict[name].inflation = (self.countries_dict[name].prices[-1] / self.countries_dict[name].prices[-2] - 1) * 100
     def start(self, output: bool, temp: int | float) -> None:
         """
-        This method starts simulation, but without feelings of society (artfeel module) and graph.
+        This method starts simulation, but without feelings of society (artfeel_E_00000002 module) and graph.
         
         Parameters
         ----------
@@ -763,7 +763,7 @@ class World(People):
                     plt.show()
     def start2(self, graph: bool, output: bool, temp: int | float) -> None:
         """
-        This method starts simulation, but without feelings of society (artfeel module).
+        This method starts simulation, but without feelings of society (artfeel_E_00000002 module).
         
         Parameters
         ----------
@@ -830,7 +830,7 @@ def start(countries: list[str], ideologies: list[str]):
     Returns
     -------
     co_so: dict
-        Dictionary of country name as key and society (artfeel.Act()) as value.
+        Dictionary of country name as key and society (artfeel_E_00000002()) as value.
 
     w: countries.World()
         World() class returned by start() function.
@@ -845,7 +845,7 @@ def start(countries: list[str], ideologies: list[str]):
 
 def game(w: World, co_so: dict, graph: int, graphTF: bool, end: int, years: int, temp: int | float):
     """
-    This game is countries module simulation mixed with artfeel module simulation.
+    This game is countries module simulation mixed with artfeel_E_00000002 module simulation.
 
     Parameters
     ----------
@@ -853,7 +853,7 @@ def game(w: World, co_so: dict, graph: int, graphTF: bool, end: int, years: int,
         World() class returned by start() function.
     
     co_so: dict
-        Dictionary of country name as key and society (artfeel.Act()) as value.
+        Dictionary of country name as key and society (artfeel_E_00000002()) as value.
     
     graph: int
         Every {graph} years the game will show graph of economy.
