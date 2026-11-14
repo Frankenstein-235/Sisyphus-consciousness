@@ -968,7 +968,6 @@ class City():
             other = {}
             for z in range(len(w2)):
                 d = []
-                memory[j], wordlist[j], gradient = list(list(self.person_dict.values())[0].pers.values())[0].check_lists(memory, w2, [], [0])
                 for l in range(len(wordlist[j])):
                     if wordlist[j][l] in w2[z]:
                         d.append(abs(np.sum(np.array(memory[j][l]) - np.array(m0[z][w2[z].index(wordlist[j][l])]))))
