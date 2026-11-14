@@ -709,19 +709,8 @@ class Subjective(LM):
                 co_so2.pop(key)
                 co_so2.update({key: v1})
             self.person.pers[sides[n]].co_so = co_so2
-            act_f = []
-            f_value = list(self.f_dict.values())
-            for j in range(len(diff)):
-                diff[j] += 1
             if f == self.think:
-                for d in range(len(diff)):
-                    for r in range(int(max(diff)/diff[d]*(max(diff) - diff[d])) + 1):
-                        act_f.append(f_value[d])
-                f = random.choice(act_f)
-                if f == self.think:
-                    f(thought, random.randint(1, 4))
-                else:
-                    f()
+                f(thought, random.randint(1, 4))
             else:
                 f()
             counter += 1
