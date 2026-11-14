@@ -1,4 +1,4 @@
-import artfeel_E_00000002 as art
+import artfeel as art
 import random
 import matplotlib.pyplot as plt
 
