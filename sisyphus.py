@@ -17,9 +17,9 @@ class DNA():
         self.dna = dna
         self.name = name
         self.cwd = cwd
-        shutil.copy(f"revolution.py", f"{self.cwd}\\revolution.txt")
-        shutil.copy(f"artfeel.py", f"{self.cwd}\\artfeel_{name}.py")
-        shutil.copy(f"{self.cwd}\\artfeel_{name}.py", f"{self.cwd}\\artfeel_{name}.txt")
+        shutil.copy(f"revolution.py", os.path.join(self.cwd, f"revolution.txt"))
+        shutil.copy(f"artfeel.py", os.path.join(self.cwd, f"artfeel_{name}.py"))
+        shutil.copy(os.path.join(self.cwd, f"artfeel_{name}.py"), os.path.join(self.cwd, f"artfeel_{name}.txt"))
         artfeel_change.change(name, dna)
         self.t_d = {}
     def cpu_temp(self) -> np.float64 | float | int:
@@ -31,7 +31,7 @@ class DNA():
         return cpu
     def func_temp(self, name):
         try:
-            with open(f"{self.cwd}\\ft_{self.name}.json", "r", encoding="utf-8") as f:
+            with open(os.path.join(self.cwd, f"ft_{self.name}.json"), "r", encoding="utf-8") as f:
                 ft = json.load(f)
             if name in list(ft.keys()):
                 v = ft[name]
@@ -44,7 +44,7 @@ class DNA():
             ft.update({name: self.cpu_temp()})
         v = np.array(list(ft.values()))
         v = np.sum(v)/len(v) + random.randint(-10, 10)*self.dna[5]
-        with open(f"{self.cwd}\\ft_{self.name}.json", "w", encoding="utf-8") as f:
+        with open(os.path.join(self.cwd, f"ft_{self.name}.json"), "w", encoding="utf-8") as f:
             json.dump(ft, f, ensure_ascii=False, indent=4)
         return v
     def count_e(self, years, yearend):
@@ -129,27 +129,27 @@ class DNA():
         else:
             lists = []
             if memory == True:
-                with open(f"{self.cwd}\\m_{name}.json", "r", encoding="utf-8") as f:
+                with open(os.path.join(self.cwd, f"m_{name}.json"), "r", encoding="utf-8") as f:
                     memory = np.array(json.load(f))
                     lists.append(memory)
             if errors == True:
-                with open(f"{self.cwd}\\e_{name}.json", "r", encoding="utf-8") as f:
+                with open(os.path.join(self.cwd, f"e_{name}.json"), "r", encoding="utf-8") as f:
                     errors = json.load(f)
                     lists.append(errors)
             if gradient == True:
-                with open(f"{self.cwd}\\g_{name}.json", "r", encoding="utf-8") as f:
+                with open(os.path.join(self.cwd, f"g_{name}.json"), "r", encoding="utf-8") as f:
                     gradient = np.array(json.load(f))
                     lists.append(gradient)
             if wordlist1 == True:
-                with open(f"{self.cwd}\\w_{name}.json", "r", encoding="utf-8") as f:
+                with open(os.path.join(self.cwd, f"w_{name}.json"), "r", encoding="utf-8") as f:
                     wordlist1 = json.load(f)
                     lists.append(wordlist1)
             if quest == True:
-                with open(f"{self.cwd}\\quest_{name}.json", "r", encoding="utf-8") as f:
+                with open(os.path.join(self.cwd, f"quest_{name}.json"), "r", encoding="utf-8") as f:
                     quest = json.load(f)
                     lists.append(quest)
             if years == True:
-                with open(f"{self.cwd}\\y_{name}.json", "r") as f:
+                with open(os.path.join(self.cwd, f"y_{name}.json"), "r") as f:
                     years = json.load(f)
                     lists.append(years)
             return tuple(lists)
@@ -197,7 +197,7 @@ class LM(DNA):
     def read(self, symbols: list[str]) -> list[str]:
         wordlist = []
         for i in self.books:
-            with open(f"{self.cwd}\\{i}.txt", "r", encoding="utf-8") as f:
+            with open(os.path.join(self.cwd, f"{i}.txt"), "r", encoding="utf-8") as f:
                 for line in f:
                     l = str(line.strip())
                     for j in range(len(symbols)):
@@ -812,7 +812,7 @@ class Person(LM):
         for i in range(len(self.names)):
             class_dict.update({self.names[i]: LM})
         try:
-            with open(f"{self.cwd}\\i_am_{self.name}.pkl", "rb") as f:
+            with open(os.path.join(self.cwd, f"i_am_{self.name}.pkl"), "rb") as f:
                 self.i_am = pickle.load(f)
         except:
             self.i_am = 0
@@ -1111,4 +1111,4 @@ class City():
         for thread in t:
             thread.start()
         for thread in t:
-            thread.join()
+            thread.join() 
