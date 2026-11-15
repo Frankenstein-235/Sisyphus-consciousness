@@ -915,7 +915,7 @@ class City():
     def new_LM(self, names: list[str], books: list[list[str]], TRNG_numbers: list[list[float]] | list[list[int]]):
         for j in names:
             self.LM_dict.update({j: LM(j, books[names.index(j)], TRNG_numbers)})
-    def new_Person(self, name: str, parts: list[str], books: list[list[str]], TRNG_numbers: list[int] | list[float], tree: bool, leaves: int):
+    def new_Person(self, name: str, parts: list[str], books: list[list[str]], TRNG_numbers: list[int] | list[float]):
         self.person_dict.update({name: Person(name, parts, books, TRNG_numbers)})
         for i in range(len(parts)):
             if parts[i] not in list(self.LM_dict.keys()):
