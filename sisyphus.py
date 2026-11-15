@@ -185,8 +185,8 @@ class DNA():
                     vectors_list[i][j] += np.sum(fn)/len(fn)
         return vectors_list
 class LM(DNA):
-    def __init__(self, name: str, books: list[str], dna: list[float] | list[int]) -> None:
-        super().__init__(name, dna)
+    def __init__(self, name: str, books: list[str], dna: list[float] | list[int], cwd=os.getcwd()) -> None:
+        super().__init__(name, dna, cwd)
         self.name = name
         self.books = books
         self.dna = dna
@@ -597,8 +597,9 @@ class LM(DNA):
         fn, fvector, f_dict, years = self.feelings(memory, wordlist1, 100, years)
         return an, endt, memory, errors, gradient, answers, years, f_dict
 class Subjective(LM):
-    def __init__(self, name, person):
-        super().__init__(name, random.choice(person.books), 6, person.dna)
+    def __init__(self, name, person, cwd=os.getcwd()):
+        super().__init__(name, random.choice(person.books), 6, person.dna, cwd)
+        self.cwd = cwd
         self.books2 = person.books
         self.name = name
         self.person = person
@@ -788,13 +789,14 @@ class Subjective(LM):
             while dna[j] / 10 > 1:
                 dna[j] /= 10
             self.func_temp("reset")
-        person = Person(f"{self.name}_Person", k, self.books2, 6, dna)
-        s = Subjective(self.name, person)
+        person = Person(f"{self.name}_Person", k, self.books2, 6, dna, self.cwd)
+        s = Subjective(self.name, person, self.cwd)
         with open(f"i_am_{self.name}.pkl", "wb") as f:
             pickle.dump(s, f)
 class Person(LM):
-    def __init__(self, name: str, part_names: list[str], books: list[list[str]], dna: list[int] | list[float]) -> None:
-        super().__init__(name, random.choice(books), dna)
+    def __init__(self, name: str, part_names: list[str], books: list[list[str]], dna: list[int] | list[float], cwd=os.getcwd()) -> None:
+        super().__init__(name, random.choice(books), dna, cwd)
+        self.cwd = cwd
         self.name = name
         self.pers = {}
         self.names = part_names
@@ -851,8 +853,8 @@ class Person(LM):
         all_a /= len(val)
         all_a *= np.array(self.dna)
         if self.i_am == 0:
-            i_am = Person(f"{self.name}_1", self.names, self.books, len(all_a), all_a)
-            self.i_am = Subjective(self.name, i_am)
+            i_am = Person(f"{self.name}_1", self.names, self.books, len(all_a), all_a, self.cwd)
+            self.i_am = Subjective(self.name, i_am, self.cwd)
             with open(f"i_am_{self.name}.pkl", "wb") as f:
                 pickle.dump(self.i_am, f)
         return val[d.index(min(d))]
@@ -913,14 +915,14 @@ class City():
     def __init__(self) -> None:
         self.LM_dict = {}
         self.person_dict = {}
-    def new_LM(self, names: list[str], books: list[list[str]], TRNG_numbers: list[list[float]] | list[list[int]]):
+    def new_LM(self, names: list[str], books: list[list[str]], TRNG_numbers: list[list[float]] | list[list[int]], cwd=os.getcwd()):
         for j in names:
-            self.LM_dict.update({j: LM(j, books[names.index(j)], TRNG_numbers)})
-    def new_Person(self, name: str, parts: list[str], books: list[list[str]], TRNG_numbers: list[int] | list[float], tree: bool, leaves: int):
-        self.person_dict.update({name: Person(name, parts, books, TRNG_numbers)})
+            self.LM_dict.update({j: LM(j, books[names.index(j)], TRNG_numbers, cwd)})
+    def new_Person(self, name: str, parts: list[str], books: list[list[str]], TRNG_numbers: list[int] | list[float], cwd=os.getcwd()):
+        self.person_dict.update({name: Person(name, parts, books, TRNG_numbers, cwd)})
         for i in range(len(parts)):
             if parts[i] not in list(self.LM_dict.keys()):
-                self.new_LM([parts[i]], [books[i]], TRNG_numbers)
+                self.new_LM([parts[i]], [books[i]], TRNG_numbers, cwd)
     def person_elements(self, name):
         m = []
         w = []
