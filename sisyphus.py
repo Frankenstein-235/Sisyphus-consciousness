@@ -246,11 +246,12 @@ class LM(DNA):
             memory[i] -= lr*gradient[indexes.index(i)]
         return memory
     def check_lists(self, memory, wordlist1, gradient, years, scale="None"):
+        gradient0 = copy.deepcopy(gradient)
         if len(memory) < len(wordlist1):
             memory = list(memory)
             memory += self.arrays(len(memory) - 1, len(wordlist1) - len(memory), years)
             memory = np.array(memory)
-        if len(gradient) < len(wordlist1):
+        if (len(gradient) < len(wordlist1)) or (len(gradient) < len(memory) and len(gradient0) == 0):
             if len(gradient) > 0:
                 av = np.sum(gradient)/len(gradient)
             else:
@@ -262,7 +263,7 @@ class LM(DNA):
         if len(memory) > len(wordlist1):
             n = len(memory) - (len(memory) - len(wordlist1))
             memory = memory[0:n]
-        if len(gradient) < len(memory):
+        if len(gradient) < len(memory) and len(gradient0) != 0:
             n = len(memory) - (len(memory) - len(gradient))
             gradient = gradient[0:n]
             memory = memory[0:n]
@@ -940,7 +941,7 @@ class City():
         www = np.unique(np.array(www))
         m0 = []
         for i in range(len(www)):
-            m0.append(list(list(self.person_dict[name].pers.values())[0].average_vector(www[i], m2, ww, [], 0, False)))
+            m0.append(list(list(self.person_dict[name].pers.values())[0].average_vector(www[i], m2, ww, [], 0)))
         with open(f"m_{name}.json", "w", encoding="utf-8") as f:
             json.dump(m0, f)
         with open(f"w_{name}.json", "w", encoding="utf-8") as f:
@@ -1111,4 +1112,4 @@ class City():
         for thread in t:
             thread.start()
         for thread in t:
-            thread.join() 
+            thread.join()
