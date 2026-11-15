@@ -13,12 +13,13 @@ import artfeel_change
 import threading
 
 class DNA():
-    def __init__(self, name, dna) -> None:
+    def __init__(self, name, dna, cwd=os.getcwd()) -> None:
         self.dna = dna
         self.name = name
-        shutil.copy(f"revolution.py", f"{os.getcwd()}\\revolution.txt")
-        shutil.copy(f"artfeel.py", f"{os.getcwd()}\\artfeel_{name}.py")
-        shutil.copy(f"{os.getcwd()}\\artfeel_{name}.py", f"{os.getcwd()}\\artfeel_{name}.txt")
+        self.cwd = cwd
+        shutil.copy(f"revolution.py", f"{self.cwd}\\revolution.txt")
+        shutil.copy(f"artfeel.py", f"{self.cwd}\\artfeel_{name}.py")
+        shutil.copy(f"{self.cwd}\\artfeel_{name}.py", f"{self.cwd}\\artfeel_{name}.txt")
         artfeel_change.change(name, dna)
         self.t_d = {}
     def cpu_temp(self) -> np.float64 | float | int:
@@ -30,7 +31,7 @@ class DNA():
         return cpu
     def func_temp(self, name):
         try:
-            with open(f"{os.getcwd()}\\ft_{self.name}.json", "r", encoding="utf-8") as f:
+            with open(f"{self.cwd}\\ft_{self.name}.json", "r", encoding="utf-8") as f:
                 ft = json.load(f)
             if name in list(ft.keys()):
                 v = ft[name]
@@ -43,7 +44,7 @@ class DNA():
             ft.update({name: self.cpu_temp()})
         v = np.array(list(ft.values()))
         v = np.sum(v)/len(v) + random.randint(-10, 10)*self.dna[5]
-        with open(f"{os.getcwd()}\\ft_{self.name}.json", "w", encoding="utf-8") as f:
+        with open(f"{self.cwd}\\ft_{self.name}.json", "w", encoding="utf-8") as f:
             json.dump(ft, f, ensure_ascii=False, indent=4)
         return v
     def count_e(self, years, yearend):
@@ -128,27 +129,27 @@ class DNA():
         else:
             lists = []
             if memory == True:
-                with open(f"{os.getcwd()}\\m_{name}.json", "r", encoding="utf-8") as f:
+                with open(f"{self.cwd}\\m_{name}.json", "r", encoding="utf-8") as f:
                     memory = np.array(json.load(f))
                     lists.append(memory)
             if errors == True:
-                with open(f"{os.getcwd()}\\e_{name}.json", "r", encoding="utf-8") as f:
+                with open(f"{self.cwd}\\e_{name}.json", "r", encoding="utf-8") as f:
                     errors = json.load(f)
                     lists.append(errors)
             if gradient == True:
-                with open(f"{os.getcwd()}\\g_{name}.json", "r", encoding="utf-8") as f:
+                with open(f"{self.cwd}\\g_{name}.json", "r", encoding="utf-8") as f:
                     gradient = np.array(json.load(f))
                     lists.append(gradient)
             if wordlist1 == True:
-                with open(f"{os.getcwd()}\\w_{name}.json", "r", encoding="utf-8") as f:
+                with open(f"{self.cwd}\\w_{name}.json", "r", encoding="utf-8") as f:
                     wordlist1 = json.load(f)
                     lists.append(wordlist1)
             if quest == True:
-                with open(f"{os.getcwd()}\\quest_{name}.json", "r", encoding="utf-8") as f:
+                with open(f"{self.cwd}\\quest_{name}.json", "r", encoding="utf-8") as f:
                     quest = json.load(f)
                     lists.append(quest)
             if years == True:
-                with open(f"{os.getcwd()}\\y_{name}.json", "r") as f:
+                with open(f"{self.cwd}\\y_{name}.json", "r") as f:
                     years = json.load(f)
                     lists.append(years)
             return tuple(lists)
@@ -196,7 +197,7 @@ class LM(DNA):
     def read(self, symbols: list[str]) -> list[str]:
         wordlist = []
         for i in self.books:
-            with open(f"{os.getcwd()}\\{i}.txt", "r", encoding="utf-8") as f:
+            with open(f"{self.cwd}\\{i}.txt", "r", encoding="utf-8") as f:
                 for line in f:
                     l = str(line.strip())
                     for j in range(len(symbols)):
@@ -809,7 +810,7 @@ class Person(LM):
         for i in range(len(self.names)):
             class_dict.update({self.names[i]: LM})
         try:
-            with open(f"{os.getcwd()}\\i_am_{self.name}.pkl", "rb") as f:
+            with open(f"{self.cwd}\\i_am_{self.name}.pkl", "rb") as f:
                 self.i_am = pickle.load(f)
         except:
             self.i_am = 0
@@ -915,7 +916,7 @@ class City():
     def new_LM(self, names: list[str], books: list[list[str]], TRNG_numbers: list[list[float]] | list[list[int]]):
         for j in names:
             self.LM_dict.update({j: LM(j, books[names.index(j)], TRNG_numbers)})
-    def new_Person(self, name: str, parts: list[str], books: list[list[str]], TRNG_numbers: list[int] | list[float]):
+    def new_Person(self, name: str, parts: list[str], books: list[list[str]], TRNG_numbers: list[int] | list[float], tree: bool, leaves: int):
         self.person_dict.update({name: Person(name, parts, books, TRNG_numbers)})
         for i in range(len(parts)):
             if parts[i] not in list(self.LM_dict.keys()):
