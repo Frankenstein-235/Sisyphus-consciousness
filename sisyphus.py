@@ -77,14 +77,14 @@ class DNA():
     def feelings(self, memory: list | np.ndarray | np.ndarray[np.ndarray[np.float64]] | np.ndarray[np.ndarray[np.int64]], 
                  wordlist1: list | list[str], yearend: int, years: int):
         fn, love, hate, fear, joy, tired, sad, years = self.count_e(years, yearend)
-        vectors = [np.zeros(self.parameters_number), np.zeros(self.parameters_number), np.zeros(self.parameters_number), 
-                   np.zeros(self.parameters_number), np.zeros(self.parameters_number), np.zeros(self.parameters_number)]
+        vectors = [np.zeros(6), np.zeros(6), np.zeros(6), 
+                   np.zeros(6), np.zeros(6), np.zeros(6)]
         lens = []
         for d in range(len(words.fn)):
             lens.append(len(words.fn[d]))
         if len(memory) < len(wordlist1):
             memory = list(memory)
-            memory += self.arrays(len(memory), len(wordlist1) - len(memory), self.parameters_number, years)
+            memory += self.arrays(len(memory), len(wordlist1) - len(memory), years)
             memory = np.array(memory)
         if len(memory) > len(wordlist1):
             n = len(memory) - (len(memory) - len(wordlist1))
@@ -152,7 +152,7 @@ class DNA():
                     years = json.load(f)
                     lists.append(years)
             return tuple(lists)
-    def arrays(self, first_index, how_many, parameters_number, years):
+    def arrays(self, first_index, how_many, years):
         vectors_list = []
         try:
             m, wordlist1, years = self.save_load(self.name, True, False, False, True, False, True, False)
@@ -166,7 +166,7 @@ class DNA():
                 if i % random.randint(1, 400) == 0:
                     fn = self.count_e(years, abs(psutil.cpu_percent()) + 1)[0]
                 array = []
-                for j in range(parameters_number):
+                for j in range(6):
                     array.append(fn[j]*self.dna[j]*(i*j))
                 vectors_list.append(array)
         else:
@@ -174,7 +174,7 @@ class DNA():
                 array = []
                 if i % random.randint(1, 400) == 0:
                     fn = self.count_e(years, abs(psutil.cpu_percent()) + 1)[0]
-                for j in range(parameters_number):
+                for j in range(6):
                     array.append(fn[j]*self.dna[j]*(i*j))
                 vectors_list.append(array)
         if len(m) == len(wordlist1):
@@ -184,13 +184,11 @@ class DNA():
                     vectors_list[i][j] += np.sum(fn)/len(fn)
         return vectors_list
 class LM(DNA):
-    def __init__(self, name: str, books: list[str], gender: str, parameters_number: int, dna: list[float] | list[int]) -> None:
+    def __init__(self, name: str, books: list[str], dna: list[float] | list[int]) -> None:
         super().__init__(name, dna)
         self.name = name
         self.books = books
-        self.gender = gender
         self.dna = dna
-        self.parameters_number = parameters_number
         self.thoughts = []
         artfeel_change.change_revolution(self.name)
         import revolution as r
@@ -249,7 +247,7 @@ class LM(DNA):
     def check_lists(self, memory, wordlist1, gradient, years, scale="None"):
         if len(memory) < len(wordlist1):
             memory = list(memory)
-            memory += self.arrays(len(memory) - 1, len(wordlist1) - len(memory), self.parameters_number, years)
+            memory += self.arrays(len(memory) - 1, len(wordlist1) - len(memory), years)
             memory = np.array(memory)
         if len(gradient) < len(wordlist1):
             if len(gradient) > 0:
@@ -379,7 +377,7 @@ class LM(DNA):
                 wordlist.append(word_p)
                 wl2.remove(t[-1])
             indexes = []
-            f_average = np.zeros(self.parameters_number)
+            f_average = np.zeros(6)
             for j in range(len(fvectors)):
                 f_average += fvectors[j]
             f_average /= len(fvectors)
@@ -512,19 +510,19 @@ class LM(DNA):
             quest = quest.split("?")
             quest = "".join(quest)
             quest = quest.split()
-            average = np.zeros((len(wordlist1), self.parameters_number))
+            average = np.zeros((len(wordlist1), 6))
             a_list = []
             for j in range(len(quest)):
                 if quest[j] not in wordlist1:
                     wordlist1.append(quest[j])
                     memory = list(memory)
-                    memory += self.arrays(len(memory), len(wordlist1) - len(memory), self.parameters_number, years)
+                    memory += self.arrays(len(memory), len(wordlist1) - len(memory), years)
                     memory = np.array(memory)
             memory, wordlist1, gradient = self.check_lists(memory, wordlist1, gradient, years)
             for k in range(len(quest)):
                 average += self.average_vector(quest[k], memory, wordlist1, gradient, years)
             average /= len(quest)
-            how = np.zeros(self.parameters_number)
+            how = np.zeros(6)
             for i in range(len(quest)):
                 if quest[i] in wordlist1 and quest[i]:
                     how += memory[wordlist1.index(quest[i])]
@@ -562,9 +560,9 @@ class LM(DNA):
                 if j not in answers:
                     d = []
                     f_d = []
-                    f_diff = np.zeros(self.parameters_number)
+                    f_diff = np.zeros(6)
                     k = key[v.index(j)].split()
-                    vector = np.zeros(self.parameters_number)
+                    vector = np.zeros(6)
                     for h in range(len(k)):
                         if k[h] in wordlist1:
                             d.append([])
@@ -587,7 +585,7 @@ class LM(DNA):
                         for j in range(len(d[i])):
                             f_diff += d[i][j]
                     f_diff /= len(d)*len(d[0])
-                    f_av = np.zeros(self.parameters_number)
+                    f_av = np.zeros(6)
                     for i in range(len(fvector)):
                         f_av += fvector[i]
                     f_av /= len(fvector)
@@ -599,13 +597,13 @@ class LM(DNA):
         return an, endt, memory, errors, gradient, answers, years, f_dict
 class Subjective(LM):
     def __init__(self, name, person):
-        super().__init__(name, random.choice(person.books), person.gender, person.parameters_number, person.dna)
+        super().__init__(name, random.choice(person.books), 6, person.dna)
         self.books2 = person.books
         self.name = name
         self.person = person
         self.dna = self.person.dna
         func = [self.think, self.feelings_2, self.reset]
-        arr = self.arrays(0, len(func), self.person.parameters_number, 0)
+        arr = self.arrays(0, len(func), 0)
         self.f_dict = {}
         for k in range(len(arr)):
             arr_str = ""
@@ -613,7 +611,7 @@ class Subjective(LM):
                 arr_str += str(arr[k][i])
                 arr_str += " "
             self.f_dict.update({arr_str: func[k]})
-        self.feeling = np.zeros(list(self.person.pers.values())[0].parameters_number)
+        self.feeling = np.zeros(6)
         self.k = list(self.person.pers.keys())
         for i in range(len(self.k)):
             name = self.k[i]
@@ -638,8 +636,8 @@ class Subjective(LM):
             self.save_load(name, memory.tolist(), None, gradient.tolist(), wordlist1, None, years, True)
         self.feeling /= len(self.k)
     def feelings_2(self, scale="None"):
-        f_vec = np.zeros(self.parameters_number)
-        av_word = np.zeros(self.parameters_number)
+        f_vec = np.zeros(6)
+        av_word = np.zeros(6)
         for key, value in self.person.pers.items():
             memory, gradient, wordlist1, years = self.save_load(key, True, False, True, True, False, True, False)
             memory, wordlist1, gradient = self.check_lists(memory, wordlist1, gradient, years, scale=scale)
@@ -719,7 +717,7 @@ class Subjective(LM):
             self.func_temp("think")
     def decide(self, thought: str, memory, wordlist1, gradient, years):
         thought = thought.split()
-        vec = np.zeros(self.person.parameters_number)
+        vec = np.zeros(6)
         for i in range(len(thought)):
             vec += self.average_vector(thought[i], memory, wordlist1, gradient, years)
         vec /= (abs(len(thought)) + 1)
@@ -781,7 +779,7 @@ class Subjective(LM):
         parts = None
         scale = "None"
         k, memory_list, errors_list, gradient_list, wordlist1_list, quest_list, years_list, memory, wordlist1, years, gradient, vectors = self.every(parts, scale)
-        dna = np.zeros(self.parameters_number)
+        dna = np.zeros(6)
         for i in range(len(memory)):
             dna += memory[i]
         dna /= len(memory)
@@ -789,23 +787,21 @@ class Subjective(LM):
             while dna[j] / 10 > 1:
                 dna[j] /= 10
             self.func_temp("reset")
-        person = Person(f"{self.name}_Person", k, self.books2, self.gender, self.parameters_number, dna)
+        person = Person(f"{self.name}_Person", k, self.books2, 6, dna)
         s = Subjective(self.name, person)
         with open(f"i_am_{self.name}.pkl", "wb") as f:
             pickle.dump(s, f)
 class Person(LM):
-    def __init__(self, name: str, part_names: list[str], books: list[list[str]], gender: str, parameters_number: int, dna: list[int] | list[float]) -> None:
-        super().__init__(name, random.choice(books), gender, parameters_number, dna)
+    def __init__(self, name: str, part_names: list[str], books: list[list[str]], dna: list[int] | list[float]) -> None:
+        super().__init__(name, random.choice(books), dna)
         self.name = name
         self.pers = {}
         self.names = part_names
-        self.parameters_number = parameters_number
         self.books = books
         self.other = {}
-        self.gender = gender
         self.dna = dna.copy()
         for i in range(len(part_names)):
-            self.pers.update({part_names[i]: LM(part_names[i], books[i], gender, parameters_number, dna)})
+            self.pers.update({part_names[i]: LM(part_names[i], books[i], dna)})
         class_dict = {"Communism": r.Communism, "Anarchism": r.Anarchism, "Monarchism": r.Monarchism,
                       "w": r.World, "person": Person, "i_am": Subjective}
         classes = ["Communism", "Anarchism", "Monarchism", "w", "i", "person", "i_am"]
@@ -828,7 +824,7 @@ class Person(LM):
                     w = random.choice(wordlist1_list)
                     if len(memory_list[wordlist1_list.index(w)]) < len(w):
                         memory = list(memory_list[wordlist1_list.index(w)])
-                        memory += self.arrays(len(memory), len(w) - len(memory), self.parameters_number, years)
+                        memory += self.arrays(len(memory), len(w) - len(memory), years)
                         memory = np.array(memory)
                         memory_list[wordlist1_list.index(w)] = copy.deepcopy(memory)
                     if answer[i][j] in w:
@@ -854,7 +850,7 @@ class Person(LM):
         all_a /= len(val)
         all_a *= np.array(self.dna)
         if self.i_am == 0:
-            i_am = Person(f"{self.name}_1", self.names, self.books, self.gender, len(all_a), all_a)
+            i_am = Person(f"{self.name}_1", self.names, self.books, len(all_a), all_a)
             self.i_am = Subjective(self.name, i_am)
             with open(f"i_am_{self.name}.pkl", "wb") as f:
                 pickle.dump(self.i_am, f)
@@ -916,14 +912,14 @@ class City():
     def __init__(self) -> None:
         self.LM_dict = {}
         self.person_dict = {}
-    def new_LM(self, names: list[str], books: list[list[str]], genders: list[str], parameters_numbers: list[int], TRNG_numbers: list[list[float]] | list[list[int]]):
+    def new_LM(self, names: list[str], books: list[list[str]], TRNG_numbers: list[list[float]] | list[list[int]]):
         for j in names:
-            self.LM_dict.update({j: LM(j, books[names.index(j)], genders[names.index(j)], parameters_numbers[names.index(j)], TRNG_numbers)})
-    def new_Person(self, name: str, parts: list[str], books: list[list[str]], gender: str, parameters_number: int, TRNG_numbers: list[int] | list[float], tree: bool, leaves: int):
-        self.person_dict.update({name: Person(name, parts, books, gender, parameters_number, TRNG_numbers)})
+            self.LM_dict.update({j: LM(j, books[names.index(j)], TRNG_numbers)})
+    def new_Person(self, name: str, parts: list[str], books: list[list[str]], TRNG_numbers: list[int] | list[float], tree: bool, leaves: int):
+        self.person_dict.update({name: Person(name, parts, books, TRNG_numbers)})
         for i in range(len(parts)):
             if parts[i] not in list(self.LM_dict.keys()):
-                self.new_LM([parts[i]], [books[i]], gender, [parameters_number], TRNG_numbers)
+                self.new_LM([parts[i]], [books[i]], TRNG_numbers)
     def person_elements(self, name):
         m = []
         w = []
