@@ -20,7 +20,7 @@ class DNA():
         shutil.copy(f"revolution.py", os.path.join(self.cwd, f"revolution.txt"))
         shutil.copy(f"artfeel.py", os.path.join(self.cwd, f"artfeel_{name}.py"))
         shutil.copy(os.path.join(self.cwd, f"artfeel_{name}.py"), os.path.join(self.cwd, f"artfeel_{name}.txt"))
-        artfeel_change.change(name, dna)
+        artfeel_change.change(name, dna, self.cwd)
         self.t_d = {}
     def cpu_temp(self) -> np.float64 | float | int:
         p = psutil.cpu_percent()
@@ -49,7 +49,7 @@ class DNA():
         return v
     def count_e(self, years, yearend):
         temp = self.func_temp("count_e")
-        artfeel_change.change_revolution(self.name)
+        artfeel_change.change_revolution(self.name, self.cwd)
         import revolution as r
         years = r.game(self.w, self.co_so, 100, False, yearend, years, temp)
         self.save_load(self.name, years=years, save_True_load_False=True)
@@ -191,7 +191,7 @@ class LM(DNA):
         self.books = books
         self.dna = dna
         self.thoughts = []
-        artfeel_change.change_revolution(self.name)
+        artfeel_change.change_revolution(self.name, cwd)
         import revolution as r
         self.co_so, self.w = r.start(["A", "B", "C"], ["Anarchism", "Communism", "Monarchism"])
     def read(self, symbols: list[str]) -> list[str]:
@@ -503,7 +503,7 @@ class LM(DNA):
                 anspace.append(an[i])
                 anspace.append(" ")
         else:
-            artfeel_change.change_revolution(self.name)
+            artfeel_change.change_revolution(self.name, self.cwd)
             import revolution as r
             temp = self.func_temp("answer")
             years = r.game(self.w, self.co_so, 100, False, 100, years, temp)
