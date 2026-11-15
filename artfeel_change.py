@@ -2,12 +2,12 @@ import copy
 import shutil
 import os
 
-def change(name, dna):
+def change(name, dna, cwd):
     code = []
     compare = ["<", ">", "<=", ">=", "!=", "=="]
     and_or = ["and", "or"]
     numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
-    with open(f"{os.getcwd()}\\artfeel_{name}.txt", "r", encoding="utf-8") as a:
+    with open(os.path.join(cwd, f"artfeel_{name}.txt"), "r", encoding="utf-8") as a:
         counter = 0
         a = a.read()
         word = ""
@@ -74,11 +74,11 @@ def change(name, dna):
                 counter += 1
             n += 1
         a = "".join(code)
-    with open(f"{os.getcwd()}\\artfeel_{name}.txt", "w", encoding="utf-8") as a2:
+    with open(os.path.join(cwd, f"artfeel_{name}.txt"), "w", encoding="utf-8") as a2:
         a2.write(a)
-    shutil.copy(f"{os.getcwd()}\\artfeel_{name}.txt", f"{os.getcwd()}\\artfeel_{name}.py")
-def change_revolution(name):
-    with open(f"{os.getcwd()}\\revolution.txt", "r", encoding="utf-8") as a:
+    shutil.copy(os.path.join(cwd, f"artfeel_{name}.txt"), os.path.join(cwd, f"artfeel_{name}.py"))
+def change_revolution(name, cwd):
+    with open(os.path.join(cwd, f"revolution.txt"), "r", encoding="utf-8") as a:
         a = a.read()
         word = ""
         code = []
@@ -98,14 +98,14 @@ def change_revolution(name):
         if len(word) > 0 and len(code) > 0 and word != code[-1]:
             code.append(word)
         if len(code) == 0:
-            shutil.copy(f"{os.getcwd()}\\save_revolution.txt", f"{os.getcwd()}\\revolution.txt")
+            shutil.copy(os.path.join(cwd, f"save_revolution.txt"), os.path.join(cwd, f"revolution.txt"))
             code = change_revolution(name)
         for ls in range(len(code)):
             if len(code[ls]) >= 7:
                 if code[ls][0] == "a" and code[ls][1] == "r" and code[ls][2] == "t" and code[ls][3] == "f" and code[ls][4] == "e" and code[ls][5] == "e" and code[ls][6] == "l":
                     code[ls] = f"artfeel_{name}"
         a = "".join(code)
-    with open(f"{os.getcwd()}\\revolution.txt", "w", encoding="utf-8") as a2:
+    with open(os.path.join(cwd, f"revolution.txt"), "w", encoding="utf-8") as a2:
         a2.write(a)
-    shutil.copy(f"{os.getcwd()}\\revolution.txt", f"{os.getcwd()}\\revolution.py")
+    shutil.copy(os.path.join(cwd, f"revolution.txt"), os.path.join(cwd, f"revolution.py"))
     return code
