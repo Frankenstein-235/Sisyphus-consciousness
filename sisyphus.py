@@ -10,6 +10,7 @@ import psutil
 import pickle
 import artfeel_change
 import threading
+import pymorphy3
 
 class DNA():
     def __init__(self, name, dna, cwd=os.getcwd()) -> None:
@@ -224,6 +225,13 @@ class LM(DNA):
                 if -j > -len(wordlist[i]):
                     if wordlist[i][-j] in s:
                         break
+            if i < len(wordlist) - 1:
+                if wordlist[i + 1] != "" and len(wordlist[i + 1].split(",")[0].split()) >= 1 and len(wordlist[i + 1].split()) >= 2 and wordlist[i + 1].split()[0] not in ["-", "—"] and wordlist[i + 1].split()[1] not in ["-", "—"] and morph.parse(wordlist[i + 1].split(",")[0].split()[0])[0].tag.POS != "VERB":
+                    for k in range(len(wordlist[i + 1])):
+                        answer.append(wordlist[i + 1][k])
+                        if k < len(wordlist[i + 1]):
+                            if wordlist[i + 1][k] in s:
+                                break
             question.reverse()
             question = "".join(question)
             answer = "".join(answer)
