@@ -5,7 +5,6 @@ import copy
 import words
 import revolution as r
 import os
-import pymorphy3
 import shutil
 import psutil
 import pickle
@@ -75,10 +74,10 @@ class DNA():
             sad /= len(value.everyone)
         fn = [love, hate, fear, joy, tired, sad]
         return fn, love, hate, fear, joy, tired, sad, years
-    def feelings(self, memory: list | np.ndarray | np.ndarray[np.ndarray[np.float64]] | np.ndarray[np.ndarray[np.int64]], 
+    def feelings(self, memory: list | np.ndarray | np.ndarray[np.ndarray[np.float64]] | np.ndarray[np.ndarray[np.int64]],
                  wordlist1: list | list[str], yearend: int, years: int):
         fn, love, hate, fear, joy, tired, sad, years = self.count_e(years, yearend)
-        vectors = [np.zeros(6), np.zeros(6), np.zeros(6), 
+        vectors = [np.zeros(6), np.zeros(6), np.zeros(6),
                    np.zeros(6), np.zeros(6), np.zeros(6)]
         lens = []
         for d in range(len(words.fn)):
@@ -210,14 +209,13 @@ class LM(DNA):
     def questions(self, books: list[str]) -> dict:
         startbooks = copy.deepcopy(self.books)
         self.books = books
-        wordlist = self.read([";", "(", ")", "«", "»", "„", "“", "q", "w", "e", "r", "t", 
+        wordlist = self.read([";", "(", ")", "«", "»", "„", "“", "q", "w", "e", "r", "t",
                               "y", "u", "i", "o", "p", "a", "s", "—",
                               "d", "f", "g", "h", "j"," k", "l", "z", "x", "c", "v", "b", "n", "m",
                               "C", "D", "B", "E", "?"])
         self.books = startbooks
         q_a = {}
         s = [".", "!"]
-        morph = pymorphy3.MorphAnalyzer()
         for i in range(len(wordlist)):
             question = [""]
             answer = [""]
@@ -226,21 +224,14 @@ class LM(DNA):
                 if -j > -len(wordlist[i]):
                     if wordlist[i][-j] in s:
                         break
-            if i < len(wordlist) - 1:
-                if wordlist[i + 1] != "" and len(wordlist[i + 1].split(",")[0].split()) >= 1 and len(wordlist[i + 1].split()) >= 2 and wordlist[i + 1].split()[0] not in ["-", "—"] and wordlist[i + 1].split()[1] not in ["-", "—"] and morph.parse(wordlist[i + 1].split(",")[0].split()[0])[0].tag.POS != "VERB":
-                    for k in range(len(wordlist[i + 1])):
-                        answer.append(wordlist[i + 1][k])
-                        if k < len(wordlist[i + 1]):
-                            if wordlist[i + 1][k] in s:
-                                break
             question.reverse()
             question = "".join(question)
             answer = "".join(answer)
             if question != ")" and answer != ")" and len(answer) > 1 and len(question) > 1:
                 q_a.update({question: answer})
         return q_a
-    def change(self, gradient: list | np.ndarray | np.ndarray[np.ndarray[np.float64]] | np.ndarray[np.ndarray[np.int64]], 
-               memory: list | np.ndarray | np.ndarray[np.ndarray[np.float64]] | np.ndarray[np.ndarray[np.int64]], 
+    def change(self, gradient: list | np.ndarray | np.ndarray[np.ndarray[np.float64]] | np.ndarray[np.ndarray[np.int64]],
+               memory: list | np.ndarray | np.ndarray[np.ndarray[np.float64]] | np.ndarray[np.ndarray[np.int64]],
                indexes: list[int], lr: float | int | np.float64) -> np.ndarray[np.ndarray[np.float64]]:
         for i in indexes:
             memory[i] -= lr*gradient[indexes.index(i)]
@@ -302,9 +293,9 @@ class LM(DNA):
         for j in indexes:
             plist[j] = float(np.e**plist[j]/p)
         return indexes, plist
-    def write(self,  wordlist1: list | list[str], learning_rate: float | int | np.float64=1e-5, start: str=None, t_end: int=random.randint(1, 10), 
-              memory: list | np.ndarray | np.ndarray[np.ndarray[np.float64]] | np.ndarray[np.ndarray[np.int64]]=[], 
-              errors: list[int] | list[float]=[], endtlist: list | list[str]=[], 
+    def write(self,  wordlist1: list | list[str], learning_rate: float | int | np.float64=1e-5, start: str=None, t_end: int=random.randint(1, 10),
+              memory: list | np.ndarray | np.ndarray[np.ndarray[np.float64]] | np.ndarray[np.ndarray[np.int64]]=[],
+              errors: list[int] | list[float]=[], endtlist: list | list[str]=[],
               gradient: list | np.ndarray | np.ndarray[np.ndarray[np.float64]] | np.ndarray[np.ndarray[np.int64]]=[], years: int=0,
               scale="None", learn=True):
         memory, wordlist1, gradient = self.check_lists(memory, wordlist1, gradient, years, scale=scale)
@@ -335,7 +326,7 @@ class LM(DNA):
                     if t[0] == endtlist[i][0] or t[0] == "" or t[0] == " ":
                         while t[0] == endtlist[i][0] or t[0] == "" or t[0] == " ":
                             t = random.sample(wlist, 1)
-        stopwords = ["как", "я", "ты", "это", "этот", "эта", "эти", 
+        stopwords = ["как", "я", "ты", "это", "этот", "эта", "эти",
                     "и", "а", "у", "вы", "не", "тот", "та", "так",
                     "к", "в", "но", "по", "их", "нам", "бы", "о",
                     "для", "этих", "этого", "эту", "этой", "этому",
@@ -445,15 +436,15 @@ class LM(DNA):
         if learn == True:
             self.save_load(self.name, memory.tolist(), errors, gradient.tolist(), wordlist1, False, years, True)
         return t2, endt, memory, endtlist, errors, gradient, startm, years
-    def answer(self, start: str, question: dict, wordlist1: list | list[str], learning_rate: float | int, 
-               memory: list | np.ndarray | np.ndarray[np.ndarray[np.float64]] | np.ndarray[np.ndarray[np.int64]], 
-               errors: list[int] | list[float], 
-               gradient: list | np.ndarray | np.ndarray[np.ndarray[np.float64]] | np.ndarray[np.ndarray[np.int64]], 
+    def answer(self, start: str, question: dict, wordlist1: list | list[str], learning_rate: float | int,
+               memory: list | np.ndarray | np.ndarray[np.ndarray[np.float64]] | np.ndarray[np.ndarray[np.int64]],
+               errors: list[int] | list[float],
+               gradient: list | np.ndarray | np.ndarray[np.ndarray[np.float64]] | np.ndarray[np.ndarray[np.int64]],
                answers: list | list[str], years: int, learn=True):
-        an = []     
+        an = []
         f_dict = {}
-        anspace = []  
-        stopwords = ["как", "я", "ты", "это", "этот", "эта", "эти", 
+        anspace = []
+        stopwords = ["как", "я", "ты", "это", "этот", "эта", "эти",
             "и", "а", "у", "вы", "не", "тот", "та", "так",
             "к", "в", "но", "по", "их", "нам", "бы", "о",
             "для", "этих", "этого", "эту", "этой", "этому",
@@ -817,8 +808,8 @@ class Person(LM):
                 self.i_am = pickle.load(f)
         except:
             self.i_am = 0
-    def average(self, answers: list[str], wordlist1_list: list[list[str]], 
-                memory_list: list[np.ndarray[np.ndarray[np.float64]]] | list[np.ndarray[np.ndarray[np.int64]]], 
+    def average(self, answers: list[str], wordlist1_list: list[list[str]],
+                memory_list: list[np.ndarray[np.ndarray[np.float64]]] | list[np.ndarray[np.ndarray[np.int64]]],
                 quest_list: list[dict], years) -> str:
         def ans(answer):
             for i in range(len(answer)):
@@ -981,9 +972,9 @@ class City():
             m, errors, gradient, wordlist1, quest, years = self.LM_dict[name].save_load(name, True, True, True, True, True, True, False)
         except:
             years = 0
-            wordlist1 = self.LM_dict[name].read(["—", ";", ":", "(", ")", "«", "»", "„", "“", "?", "!", "[", "]", 
-                                    "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ",", 
-                                    "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", 
+            wordlist1 = self.LM_dict[name].read(["—", ";", ":", "(", ")", "«", "»", "„", "“", "?", "!", "[", "]",
+                                    "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ",",
+                                    "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s",
                                     "d", "f", "g", "h", "j"," k", "l", "z", "x", "c", "v", "b", "n", "m",
                                     "C", "D", "B", "E", ".", " "])
             quest = self.LM_dict[name].questions(self.LM_dict[name].books)
