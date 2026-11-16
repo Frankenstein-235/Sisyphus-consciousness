@@ -10,8 +10,7 @@ import psutil
 import pickle
 import artfeel_change
 import threading
-import pymorphy3
-
+import pymorphy4
 class DNA():
     def __init__(self, name, dna, cwd=os.getcwd()) -> None:
         self.dna = dna
@@ -217,6 +216,7 @@ class LM(DNA):
         self.books = startbooks
         q_a = {}
         s = [".", "!"]
+        morph = pymorphy3.MorphAnalyzer()
         for i in range(len(wordlist)):
             question = [""]
             answer = [""]
