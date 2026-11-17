@@ -11,6 +11,7 @@ import pickle
 import artfeel_change
 import threading
 import pymorphy3
+
 class DNA():
     def __init__(self, name, dna, cwd=os.getcwd()) -> None:
         self.dna = dna
@@ -163,8 +164,6 @@ class DNA():
         fn = self.count_e(years, abs(psutil.cpu_percent()) + 1)[0]
         if random.choice(self.dna) >= max(self.dna)//2:
             for i in range(first_index, how_many + first_index):
-                if i % random.randint(1, 400) == 0:
-                    fn = self.count_e(years, abs(psutil.cpu_percent()) + 1)[0]
                 array = []
                 for j in range(6):
                     array.append(fn[j]*self.dna[j]*(i*j))
@@ -172,8 +171,6 @@ class DNA():
         else:
             for i in range(how_many):
                 array = []
-                if i % random.randint(1, 400) == 0:
-                    fn = self.count_e(years, abs(psutil.cpu_percent()) + 1)[0]
                 for j in range(6):
                     array.append(fn[j]*self.dna[j]*(i*j))
                 vectors_list.append(array)
@@ -281,11 +278,9 @@ class LM(DNA):
                 index = random.randint(0, len(wordlist1) - scale)
                 wordlist1 = wordlist1[index:index + scale]
         return memory, wordlist1, gradient
-    def average_vector(self, word, memory, wordlist1, gradient, years, check=True):
+    def average_vector(self, word, memory, wordlist1):
         average = np.zeros(len(memory[0]))
         counter = 0
-        if check == True:
-            memory, wordlist1, gradient = self.check_lists(memory, wordlist1, gradient, years)
         for i in range(len(wordlist1)):
             if word == wordlist1[i]:
                 average += memory[i]
@@ -361,7 +356,7 @@ class LM(DNA):
             for i in range(n):
                 c = w2.count(t[-n])
                 for j in range(c):
-                    average += self.average_vector(t[-n], memory, wordlist1, gradient, years)/(n*c)
+                    average += self.average_vector(t[-n], memory, wordlist1)/(n*c)
                     w2.remove(t[-n])
             plist = []
             true_p = []
@@ -521,7 +516,7 @@ class LM(DNA):
                     memory = np.array(memory)
             memory, wordlist1, gradient = self.check_lists(memory, wordlist1, gradient, years)
             for k in range(len(quest)):
-                average += self.average_vector(quest[k], memory, wordlist1, gradient, years)
+                average += self.average_vector(quest[k], memory, wordlist1)
             average /= len(quest)
             how = np.zeros(6)
             for i in range(len(quest)):
@@ -567,7 +562,7 @@ class LM(DNA):
                     for h in range(len(k)):
                         if k[h] in wordlist1:
                             d.append([])
-                            array = self.average_vector(k[h], memory, wordlist1, gradient, years)
+                            array = self.average_vector(k[h], memory, wordlist1)
                             vector += array
                             for i in range(len(fvector)):
                                 d[-1].append(abs(np.sum(array - fvector[i])))
@@ -598,7 +593,7 @@ class LM(DNA):
         return an, endt, memory, errors, gradient, answers, years, f_dict
 class Subjective(LM):
     def __init__(self, name, person, cwd=os.getcwd()):
-        super().__init__(name, random.choice(person.books), 6, person.dna, cwd)
+        super().__init__(name, random.choice(person.books), person.dna, cwd)
         self.cwd = cwd
         self.books2 = person.books
         self.name = name
@@ -686,7 +681,7 @@ class Subjective(LM):
             vector = np.zeros(6)
             ans_ = ans.split()
             for e in range(len(ans_)):
-                vector += self.person.pers[sides[n]].average_vector(ans[e], memory_list[n], wordlist1_list[n], gradient_list[n], years_list[n])
+                vector += self.person.pers[sides[n]].average_vector(ans[e], memory_list[n], wordlist1_list[n])
             vector /= len(ans_)
             co_so2 = copy.deepcopy(self.person.pers[sides[n]].co_so)
             for key, value in self.person.pers[sides[n]].co_so.items():
@@ -721,7 +716,7 @@ class Subjective(LM):
         thought = thought.split()
         vec = np.zeros(6)
         for i in range(len(thought)):
-            vec += self.average_vector(thought[i], memory, wordlist1, gradient, years)
+            vec += self.average_vector(thought[i], memory, wordlist1)
         vec /= (abs(len(thought)) + 1)
         lists = []
         for key, value in self.f_dict.items():
@@ -789,7 +784,7 @@ class Subjective(LM):
             while dna[j] / 10 > 1:
                 dna[j] /= 10
             self.func_temp("reset")
-        person = Person(f"{self.name}_Person", k, self.books2, 6, dna, self.cwd)
+        person = Person(f"{self.name}_Person", k, self.books2, dna, self.cwd)
         s = Subjective(self.name, person, self.cwd)
         with open(f"i_am_{self.name}.pkl", "wb") as f:
             pickle.dump(s, f)
@@ -816,29 +811,40 @@ class Person(LM):
                 self.i_am = pickle.load(f)
         except:
             self.i_am = 0
+    def ans(self, answer, memory_list, wordlist1_list, years):
+        v_ans = np.zeros(len(memory_list[0][0]))
+        for i in range(len(answer)):
+            counter = 0
+            for j in range(len(answer[i])):
+                w = random.choice(wordlist1_list)
+                if len(memory_list[wordlist1_list.index(w)]) < len(w):
+                    memory = list(memory_list[wordlist1_list.index(w)])
+                    memory += self.arrays(len(memory), len(w) - len(memory), years)
+                    memory = np.array(memory)
+                    memory_list[wordlist1_list.index(w)] = copy.deepcopy(memory)
+                if answer[i][j] in w:
+                    v_ans += memory_list[wordlist1_list.index(w)][w.index(answer[i][j])]
+                    counter += 1
+            if counter != 0:
+                v_ans /= counter
+        return v_ans
     def average(self, answers: list[str], wordlist1_list: list[list[str]],
                 memory_list: list[np.ndarray[np.ndarray[np.float64]]] | list[np.ndarray[np.ndarray[np.int64]]],
                 quest_list: list[dict], years) -> str:
-        def ans(answer):
-            for i in range(len(answer)):
-                v_ans = np.zeros(len(memory_list[0][0]))
-                counter = 0
-                for j in range(len(answer[i])):
-                    w = random.choice(wordlist1_list)
-                    if len(memory_list[wordlist1_list.index(w)]) < len(w):
-                        memory = list(memory_list[wordlist1_list.index(w)])
-                        memory += self.arrays(len(memory), len(w) - len(memory), years)
-                        memory = np.array(memory)
-                        memory_list[wordlist1_list.index(w)] = copy.deepcopy(memory)
-                    if answer[i][j] in w:
-                        v_ans += memory_list[wordlist1_list.index(w)][w.index(answer[i][j])]
-                        counter += 1
-                if counter != 0:
-                    v_ans /= counter
-            return v_ans
         vector = np.zeros(len(memory_list[0][0]))
         for i in range(len(answers)):
-            v = ans(answers[i])
+            v = self.ans(answers[i], memory_list, wordlist1_list, years)
+            vector += v
+        vector /= len(answers)
+        d = []
+        val = []
+        for e in range(len(quest_list)):
+            val += quest_list[e]
+        return val[d.index(min(d))]
+    def make_Subjective(self, memory_list, answers, quest_list, years):
+        vector = np.zeros(len(memory_list[0][0]))
+        for i in range(len(answers)):
+            v = self.ans(answers[i], memory_list, quest_list, years)
             vector += v
         vector /= len(answers)
         d = []
@@ -847,17 +853,17 @@ class Person(LM):
             val += quest_list[e]
         all_a = np.zeros(len(memory_list[0][0]))
         for i in range(len(val)):
-            v_a = ans(val[i])
+            v_a = self.ans(val[i], memory_list, quest_list, years)
             d.append(abs(np.sum(vector - v_a)))
             all_a += self.dna/(abs(v_a) + 1)
         all_a /= len(val)
         all_a *= np.array(self.dna)
         if self.i_am == 0:
-            i_am = Person(f"{self.name}_1", self.names, self.books, len(all_a), all_a, self.cwd)
+            i_am = Person(f"{self.name}_1", self.names, self.books, all_a, self.cwd)
             self.i_am = Subjective(self.name, i_am, self.cwd)
             with open(f"i_am_{self.name}.pkl", "wb") as f:
                 pickle.dump(self.i_am, f)
-        return val[d.index(min(d))]
+        return self.i_am
     def chat(self, names: list[str] | None, human=True) -> None:
         if names == None:
             names = list(self.pers.keys())
@@ -926,10 +932,17 @@ class City():
     def person_elements(self, name):
         m = []
         w = []
+        q = []
+        y = 0
         for key, value in self.person_dict[name].pers.items():
-            memory, wordlist1 = value.save_load(key, memory=True, wordlist1=True, save_True_load_False=False)
+            memory, wordlist1, quest, years = value.save_load(key, memory=True, wordlist1=True, quest=True, years=True, save_True_load_False=False)
             w.append(wordlist1)
             m.append(memory)
+            q += list(quest.values())
+            y += years
+        y /= len(w)
+        y = int(y)
+        self.person_dict[name].make_Subjective(m, q, w, y)
         m2 = []
         ww = copy.deepcopy(w)
         www = []
@@ -939,12 +952,13 @@ class City():
         ww = copy.deepcopy(www)
         www = np.unique(np.array(www))
         m0 = []
+        m2, ww, g = list(self.person_dict[name].pers.values())[0].check_lists(m2, ww, [], 0)
         for i in range(len(www)):
-            m0.append(list(list(self.person_dict[name].pers.values())[0].average_vector(www[i], m2, ww, [], 0)))
+            m0.append(list(list(self.person_dict[name].pers.values())[0].average_vector(www[i], m2, ww)))
         with open(f"m_{name}.json", "w", encoding="utf-8") as f:
             json.dump(m0, f)
         with open(f"w_{name}.json", "w", encoding="utf-8") as f:
-            json.dump(ww, f)
+            json.dump(www.tolist(), f)
     def update(self):
         memory = []
         wordlist = []
@@ -1047,12 +1061,12 @@ class City():
                     while answer[-1] not in f or counter < 50:
                         f = random.choice(wordlist1_list)
                         counter += 1
-                    d.append(abs(np.sum(values_list[v].average_vector(answers[v], memory_list[v], wordlist1_list[v], gradient_list[v], years_list[v]) - kk[wordlist1_list.index(f)%len(kk)].average_vector([answer][-1], memory_list[wordlist1_list.index(f)%len(kk)], wordlist1_list[wordlist1_list.index(f)%len(kk)], gradient_list[wordlist1_list.index(f)%len(kk)], years_list[wordlist1_list.index(f)%len(kk)]))))
+                    d.append(abs(np.sum(values_list[v].average_vector(answers[v], memory_list[v], wordlist1_list[v]) - kk[wordlist1_list.index(f)%len(kk)].average_vector([answer][-1], memory_list[wordlist1_list.index(f)%len(kk)], wordlist1_list[wordlist1_list.index(f)%len(kk)]))))
                 answer.append(word[d.index(min(d))])
                 answer = answer[1:]
                 vector = np.zeros(6)
                 for b in range(len(answer)):
-                    vector += kk[wordlist1_list.index(f)%len(kk)].average_vector([answer][b], memory_list[wordlist1_list.index(f)%len(kk)], wordlist1_list[wordlist1_list.index(f)%len(kk)], gradient_list[wordlist1_list.index(f)%len(kk)], years_list[wordlist1_list.index(f)%len(kk)])
+                    vector += kk[wordlist1_list.index(f)%len(kk)].average_vector([answer][b], memory_list[wordlist1_list.index(f)%len(kk)], wordlist1_list[wordlist1_list.index(f)%len(kk)])
                 vector /= len(answer)
                 co_so2 = copy.deepcopy(kk[wordlist1_list.index(f)%len(kk)].co_so)
                 for key, value in kk[wordlist1_list.index(f)%len(kk)].co_so.items():
