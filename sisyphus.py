@@ -10,7 +10,7 @@ import psutil
 import pickle
 import artfeel_change
 import threading
-import pymorphy4
+import pymorphy3
 class DNA():
     def __init__(self, name, dna, cwd=os.getcwd()) -> None:
         self.dna = dna
