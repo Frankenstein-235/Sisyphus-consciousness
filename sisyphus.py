@@ -705,7 +705,11 @@ class Subjective(LM):
                 co_so2.update({key: v1})
             self.person.pers[sides[n]].co_so = co_so2
             if f == self.think:
-                f(thought, random.randint(1, 4))
+                fn = self.feelings_2()[0]
+                temp = self.func_temp("think")
+                v = temp*((fn[1] + fn[4] + fn[5])/(fn[0] + fn[2] + fn[3]))
+                if v <= temp/2:
+                    f(thought, random.randint(1, 4))
             else:
                 f()
             counter += 1
@@ -850,7 +854,8 @@ class Person(LM):
         d = []
         val = []
         for e in range(len(quest_list)):
-            val += quest_list[e]
+            val += quest_list[e]  
+        val = np.unique(val)  
         all_a = np.zeros(len(memory_list[0][0]))
         for i in range(len(val)):
             v_a = self.ans(val[i], memory_list, quest_list, years)
@@ -858,11 +863,10 @@ class Person(LM):
             all_a += self.dna/(abs(v_a) + 1)
         all_a /= len(val)
         all_a *= np.array(self.dna)
-        if self.i_am == 0:
-            i_am = Person(f"{self.name}_1", self.names, self.books, all_a, self.cwd)
-            self.i_am = Subjective(self.name, i_am, self.cwd)
-            with open(f"i_am_{self.name}.pkl", "wb") as f:
-                pickle.dump(self.i_am, f)
+        i_am = Person(f"{self.name}_1", self.names, self.books, all_a, self.cwd)
+        self.i_am = Subjective(self.name, i_am, self.cwd)
+        with open(f"i_am_{self.name}.pkl", "wb") as f:
+            pickle.dump(self.i_am, f)
         return self.i_am
     def chat(self, names: list[str] | None, human=True) -> None:
         if names == None:
@@ -968,7 +972,7 @@ class City():
                 memory1, wordlist1_1 = list(list(self.person_dict.values())[0].pers.values())[0].save_load(key, memory=True, wordlist1=True, save_True_load_False=False)
             except:
                 self.person_elements(key)
-            m, wordlist1 = value.save_load(key, memory=True, wordlist1=True, save_True_load_False=False)
+            m, wordlist1, = value.save_load(key, memory=True, wordlist1=True, save_True_load_False=False)
             memory.append(m.tolist())
             wordlist.append(wordlist1)
         for j in range(len(memory)):
