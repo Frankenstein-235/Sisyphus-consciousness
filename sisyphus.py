@@ -972,7 +972,7 @@ class City():
                 memory1, wordlist1_1 = list(list(self.person_dict.values())[0].pers.values())[0].save_load(key, memory=True, wordlist1=True, save_True_load_False=False)
             except:
                 self.person_elements(key)
-            m, wordlist1, = value.save_load(key, memory=True, wordlist1=True, save_True_load_False=False)
+            m, wordlist1 = value.save_load(key, memory=True, wordlist1=True, save_True_load_False=False)
             memory.append(m.tolist())
             wordlist.append(wordlist1)
         for j in range(len(memory)):
