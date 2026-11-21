@@ -343,6 +343,7 @@ class LM(DNA):
         if start != None:
             k -= len(start.split())
         fn, fvectors, f_d, years = self.feelings(memory, wordlist1, 100, years)
+        memory, wordlist1, gradient = self.check_lists(memory, wordlist1, gradient, years, scale=scale)
         while k < t_end and tlist[-6] != tlist[-1]:
             plist = []
             wordlist = []
@@ -646,8 +647,8 @@ class Subjective(LM):
             self.func_temp("feelings_2")
         av_word /= len(self.k)
         f_vec /= len(self.k)
-        return f_vec, av_word
-    def think(self, thought="", inf=""):
+        return f_vec, av_word, wordvec
+    def think(self, thought="", inf="", rand=False):
         quest_list = []
         memory_list = []
         errors_list = []
@@ -657,6 +658,8 @@ class Subjective(LM):
         years_list = []
         sides = self.k.copy()
         n = 0
+        if rand == True:
+            random.shuffle(sides)
         for j in range(len(sides)):
             name = sides[j]
             memory, errors, gradient, wordlist1, quest, years = self.save_load(name, True, True, True, True, True, True, False)
@@ -684,21 +687,22 @@ class Subjective(LM):
                 vector += self.person.pers[sides[n]].average_vector(ans[e], memory_list[n], wordlist1_list[n])
             vector /= len(ans_)
             co_so2 = copy.deepcopy(self.person.pers[sides[n]].co_so)
+            f_vec, av_word, wordvec = self.feelings_2()
             for key, value in self.person.pers[sides[n]].co_so.items():
                 v1 = copy.deepcopy(value)
                 for key2, value2 in value.everyone.items():
                     if vector[0] != 0:
-                        value2.love += value2.love / vector[0]
+                        value2.love += np.sum(wordvec[0] / vector[0])
                     if vector[1] != 0:
-                        value2.hate += value2.hate / vector[1]
+                        value2.hate += np.sum(wordvec[1] / vector[1])
                     if vector[2] != 0:
-                        value2.fear += value2.fear / vector[2]
+                        value2.fear += np.sum(wordvec[2] / vector[2])
                     if vector[3] != 0:
-                        value2.joy += value2.joy / vector[3]
+                        value2.joy += np.sum(wordvec[3] / vector[3])
                     if vector[4] != 0:
-                        value2.tired += value2.tired / vector[4]
+                        value2.tired += np.sum(wordvec[4] / vector[4])
                     if vector[5] != 0:
-                        value2.sad += value2.sad / vector[5]
+                        value2.sad += np.sum(wordvec[5] / vector[5])
                     v1.everyone.pop(key2)
                     v1.everyone.update({key2: value2})
                 co_so2.pop(key)
@@ -736,50 +740,29 @@ class Subjective(LM):
         func = list(self.f_dict.values())[diff.index(min(diff))]
         r = func
         return r, diff
-    def every(self, parts, scale):
-        if parts == None:
-            k = list(self.person.pers.keys())
-        else:
-            k = parts
+    def reset(self):
+        k = list(self.person.pers.keys())
         memory_list = []
-        errors_list = []
         gradient_list = []
         wordlist1_list = []
-        quest_list = []
         years_list = []
         for i in range(len(k)):
             name = k[i]
-            memory, errors, gradient, wordlist1, quest, years = self.save_load(name, True, True, True, True, True, True, False)
+            memory, gradient, wordlist1, years = self.save_load(name, memory=True, gradient=True, wordlist1=True, years=True, save_True_load_False=False)
             memory_list.append(memory)
-            errors_list.append(errors)
             gradient_list.append(gradient)
             wordlist1_list.append(wordlist1)
-            quest_list.append(quest)
             years_list.append(years)
-            memory = memory_list[-1]
-            wordlist1 = wordlist1_list[-1]
-            years = years_list[-1]
-            fn, vectors, f_d, years =  self.person.pers[k[i]].feelings(memory, wordlist1, 100, years)
-            vectors = np.array(vectors)
         w1 = []
         memory = []
         gradient = []
-        errors = []
-        years = []
         for j in range(len(memory_list)):
-            memory_list[j], wordlist1_list[j], gradient_list[j] = self.check_lists(memory_list[j], wordlist1_list[j], gradient_list[j], years_list[j], scale=scale)
+            memory_list[j], wordlist1_list[j], gradient_list[j] = self.check_lists(memory_list[j], wordlist1_list[j], gradient_list[j], years_list[j])
             memory += list(memory_list[j])
             w1 += wordlist1_list[j]
             gradient += list(gradient_list[j])
-            errors += errors_list[j]
         memory, w1, gradient = self.check_lists(memory, w1, gradient, int(np.sum(years_list)/len(years_list)))
         memory = np.array(memory)
-        gradient = np.array(gradient)
-        return k, memory_list, errors_list, gradient_list, wordlist1_list, quest_list, years_list, memory, w1, years, gradient, vectors
-    def reset(self):
-        parts = None
-        scale = "None"
-        k, memory_list, errors_list, gradient_list, wordlist1_list, quest_list, years_list, memory, wordlist1, years, gradient, vectors = self.every(parts, scale)
         dna = np.zeros(6)
         for i in range(len(memory)):
             dna += memory[i]
@@ -1073,21 +1056,22 @@ class City():
                     vector += kk[wordlist1_list.index(f)%len(kk)].average_vector([answer][b], memory_list[wordlist1_list.index(f)%len(kk)], wordlist1_list[wordlist1_list.index(f)%len(kk)])
                 vector /= len(answer)
                 co_so2 = copy.deepcopy(kk[wordlist1_list.index(f)%len(kk)].co_so)
+                f_vec, av_word, wordvec = self.person_dict[names[j]].i_am.feelings_2()
                 for key, value in kk[wordlist1_list.index(f)%len(kk)].co_so.items():
                     v1 = copy.deepcopy(value)
                     for key2, value2 in value.everyone.items():
                         if vector[0] != 0:
-                            value2.love += value2.love / vector[0]
+                            value2.love += np.sum(wordvec[0] / vector[0])
                         if vector[1] != 0:
-                            value2.hate += value2.hate / vector[1]
+                            value2.hate += np.sum(wordvec[1] / vector[1])
                         if vector[2] != 0:
-                            value2.fear += value2.fear / vector[2]
+                            value2.fear += np.sum(wordvec[2] / vector[2])
                         if vector[3] != 0:
-                            value2.joy += value2.joy / vector[3]
+                            value2.joy += np.sum(wordvec[3] / vector[3])
                         if vector[4] != 0:
-                            value2.tired += value2.tired / vector[4]
+                            value2.tired += np.sum(wordvec[4] / vector[4])
                         if vector[5] != 0:
-                            value2.sad += value2.sad / vector[5]
+                            value2.sad += np.sum(wordvec[5] / vector[5])
                         v1.everyone.pop(key2)
                         v1.everyone.update({key2: value2})
                     co_so2.pop(key)
@@ -1109,23 +1093,29 @@ class City():
             self.part_learn_quest(key, epochs=epochs, learning_rate=lr, learn=learn)
     def chat_Person(self, name: str, names: list[str] | None, human=True) -> None:
         self.person_dict[name].chat(names, human)
-    def persons_chat(self, names, inf):
+    def persons_chat(self, names, inf, rand):
         counter = 0
         while counter < inf:
             for i in range(len(names)):
-                self.person_dict[names[i]].i_am.think(inf=1)
+                self.person_dict[names[i]].i_am.think(inf=1, rand=rand)
                 vec = list(self.person_dict[names[i]].i_am.feelings_2()[0])
                 if vec.index(min(vec)) in [1, 2, 4, 5]:
+                    v = max(list(self.person_dict[names[i]].other.values())) + 1
                     b = []
                     for key, value in self.person_dict[names[i]].other.items():
-                        for j in range(int(value*1000)):
+                        g = np.e**(v/value)
+                        d = np.e**min(list(self.person_dict[names[i]].other.values()))
+                        if g*(1/np.e**d) not in [float("nan"), float("inf")]:
+                            for j in range(int(g*(1/np.e**d))):
+                                b.append(key)
+                        else:
                             b.append(key)
                     self.two([names[i], random.choice(b)], random.randint(1, inf))
             counter += 1
-    def threads_chat(self, names, inf):
+    def threads_chat(self, names, inf, rand=False):
         names2 = copy.deepcopy(names)
         names2.reverse()
-        t = [threading.Thread(target=self.persons_chat, args=(names, inf)), threading.Thread(target=self.persons_chat, args=(names2, inf))]
+        t = [threading.Thread(target=self.persons_chat, args=(names, inf, rand)), threading.Thread(target=self.persons_chat, args=(names2, inf, rand))]
         for thread in t:
             thread.start()
         for thread in t:
